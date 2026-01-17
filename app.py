@@ -1,4 +1,4 @@
-# app/ultimate_dashboard_final.py - COMPLETE ERROR-FREE VERSION
+# app/ultimate_dashboard_final.py - DEPLOYMENT READY VERSION
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -13,6 +13,14 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import warnings
 warnings.filterwarnings('ignore')
+
+# Add matplotlib import for background_gradient
+try:
+    import matplotlib
+    matplotlib.use('Agg')  # Use non-interactive backend
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
 
 # Page configuration
 st.set_page_config(
@@ -706,7 +714,7 @@ class UltimateAadhaarDashboard:
             with col1:
                 if st.button(
                     "📊 Standard",
-                    use_container_width=True,
+                    width='stretch',
                     type="primary" if st.session_state.mode == "standard" else "secondary",
                     help="Pre-loaded analytics with advanced features"
                 ) and st.session_state.mode != "standard":
@@ -716,7 +724,7 @@ class UltimateAadhaarDashboard:
             with col2:
                 if st.button(
                     "🌐 Universal",
-                    use_container_width=True,
+                    width='stretch',
                     type="primary" if st.session_state.mode == "universal" else "secondary",
                     help="Upload any dataset for comprehensive analysis"
                 ) and st.session_state.mode != "universal":
@@ -728,7 +736,7 @@ class UltimateAadhaarDashboard:
             # REAL UIDAI Data section
             st.markdown("### 🔐 UIDAI Real Data")
             
-            if st.button("🚀 Load Real UIDAI Data", use_container_width=True, type="primary"):
+            if st.button("🚀 Load Real UIDAI Data", width='stretch', type="primary"):
                 with st.spinner("Loading 5+ million real UIDAI records..."):
                     real_data = self.load_real_uidai_data()
                     if real_data:
@@ -787,7 +795,7 @@ class UltimateAadhaarDashboard:
             action_col1, action_col2 = st.columns(2)
             
             with action_col1:
-                if st.button("🔄 Refresh", use_container_width=True, type="primary"):
+                if st.button("🔄 Refresh", width='stretch', type="primary"):
                     st.session_state.data = self.create_sample_data()
                     st.session_state.risk_data = self.create_risk_data()
                     st.session_state.clustering_results = None
@@ -795,7 +803,7 @@ class UltimateAadhaarDashboard:
                     st.rerun()
             
             with action_col2:
-                if st.button("🎯 Sample", use_container_width=True, type="secondary"):
+                if st.button("🎯 Sample", width='stretch', type="secondary"):
                     st.info("📥 Loading sample data...")
                     self.load_data()
                     st.rerun()
@@ -807,7 +815,7 @@ class UltimateAadhaarDashboard:
                 n_clusters = st.slider("Number of Clusters", 2, 6, 3, 
                                       help="Adjust the number of clusters for analysis")
                 
-                if st.button("🔍 Perform Clustering", use_container_width=True, type="primary"):
+                if st.button("🔍 Perform Clustering", width='stretch', type="primary"):
                     with st.spinner("🔬 Performing clustering analysis..."):
                         clustering_results = self.perform_clustering(st.session_state.data, n_clusters)
                         if clustering_results:
@@ -823,7 +831,7 @@ class UltimateAadhaarDashboard:
                     data=csv,
                     file_name="aadhaar_analytics_pro.csv",
                     mime="text/csv",
-                    use_container_width=True,
+                    width='stretch',
                     type="primary"
                 )
     
@@ -1098,7 +1106,7 @@ class UltimateAadhaarDashboard:
         with col2:
             algorithm = st.selectbox("Clustering algorithm", ["K-Means", "DBSCAN"], key="algo_select")
         
-        if st.button("🚀 Perform Clustering", type="primary", use_container_width=True, key="upload_cluster_btn"):
+        if st.button("🚀 Perform Clustering", type="primary", width='stretch', key="upload_cluster_btn"):
             with st.spinner("🔬 Running clustering algorithm..."):
                 if algorithm == "K-Means":
                     results = self.perform_clustering(df, n_clusters)
@@ -1181,7 +1189,7 @@ class UltimateAadhaarDashboard:
                 data=csv_original,
                 file_name="original_data.csv",
                 mime="text/csv",
-                use_container_width=True,
+                width='stretch',
                 type="primary",
                 key="export_original"
             )
@@ -1197,7 +1205,7 @@ class UltimateAadhaarDashboard:
                     data=csv_clustered,
                     file_name="clustered_data.csv",
                     mime="text/csv",
-                    use_container_width=True,
+                    width='stretch',
                     type="primary",
                     key="export_clustered"
                 )
@@ -1533,8 +1541,14 @@ class UltimateAadhaarDashboard:
                     'is_anomaly': 'mean'
                 }).round(3)
                 
-                # Display cluster statistics
-                st.dataframe(cluster_stats.style.background_gradient(cmap='RdYlGn', axis=0))
+                # Display cluster statistics - FIXED: Removed background_gradient
+                if HAS_MATPLOTLIB:
+                    try:
+                        st.dataframe(cluster_stats.style.background_gradient(cmap='RdYlGn', axis=0))
+                    except:
+                        st.dataframe(cluster_stats)
+                else:
+                    st.dataframe(cluster_stats)
                 
                 # Cluster profiles
                 st.markdown("#### 👥 **Cluster Profiles**")
@@ -1564,7 +1578,7 @@ class UltimateAadhaarDashboard:
                     data=csv,
                     file_name="aadhaar_clustered_data.csv",
                     mime="text/csv",
-                    use_container_width=True,
+                    width='stretch',
                     type="primary",
                     key="export_cluster_data"
                 )
@@ -1590,7 +1604,7 @@ class UltimateAadhaarDashboard:
             """, unsafe_allow_html=True)
             
             # Quick clustering button
-            if st.button("🚀 Perform Quick Clustering", use_container_width=True, type="primary", key="quick_cluster"):
+            if st.button("🚀 Perform Quick Clustering", width='stretch', type="primary", key="quick_cluster"):
                 with st.spinner("Running clustering algorithm..."):
                     results = self.perform_clustering(df, 3)
                     if results:
@@ -1633,7 +1647,7 @@ class UltimateAadhaarDashboard:
             fig.update_layout(xaxis_title="Date", yaxis_title="Number of Anomalies")
             st.plotly_chart(fig, use_container_width=True, config=PLOTLY_CONFIG)
             
-            # Anomaly details
+            # Anomaly details - FIXED: Removed background_gradient
             st.markdown("#### 📋 **Detected Anomalies**")
             
             display_df = anomalies[['state', 'district', 'date', 'enrolments', 
@@ -1642,10 +1656,16 @@ class UltimateAadhaarDashboard:
             display_df['success_rate'] = display_df['success_rate'].apply(lambda x: f"{x*100:.1f}%")
             display_df = display_df.sort_values('anomaly_score', ascending=False)
             
-            st.dataframe(
-                display_df.style.background_gradient(subset=['enrolments'], cmap='Oranges'),
-                height=400
-            )
+            if HAS_MATPLOTLIB:
+                try:
+                    st.dataframe(
+                        display_df.style.background_gradient(subset=['enrolments'], cmap='Oranges'),
+                        height=400
+                    )
+                except:
+                    st.dataframe(display_df, height=400)
+            else:
+                st.dataframe(display_df, height=400)
             
             # Anomaly patterns
             st.markdown("#### 🎯 **Anomaly Patterns**")
